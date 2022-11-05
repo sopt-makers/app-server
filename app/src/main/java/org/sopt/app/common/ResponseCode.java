@@ -15,6 +15,7 @@ public enum ResponseCode {
     SUCCESS("00","00", "0000", "정상 처리되었습니다.", HttpStatus.OK);
 
 
+
     private final String codeGroup;
     private final String code;
     private final String responseCode;
