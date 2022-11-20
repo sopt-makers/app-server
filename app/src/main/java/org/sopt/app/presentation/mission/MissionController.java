@@ -1,14 +1,17 @@
 package org.sopt.app.presentation.mission;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.sopt.app.application.mission.MissionService;
+import org.sopt.app.common.s3.S3Service;
+import org.sopt.app.domain.entity.Mission;
 import org.sopt.app.presentation.BaseController;
+import org.sopt.app.presentation.mission.dto.MissionRequestDto;
+import org.sopt.app.presentation.mission.dto.MissionResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MissionController extends BaseController {
 
   private final MissionService missionService;
+  private final S3Service s3Service;
 
 
   /**
@@ -29,28 +33,34 @@ public class MissionController extends BaseController {
   }
 
 
-
   /**
    * 미션 업로드 하기
    */
-//  // 게시글 작성
-//  @PostMapping("/notice")
-//  public ResponseEntity<?> uploadPost(@RequestPart("noticeContent") NoticeRequestDTO noticeRequestDTO,
-//      @RequestPart("imgUrl") List<MultipartFile> multipartFiles) {
-//
-//    //MultipartFile을 리스트에 넣어줬기 때문에 List 내부의 이미지파일에 isEmpty()를 적용해야 한다.
-//    int checkNum = 1;
-//    for(MultipartFile image: multipartFiles){
-//      if(image.isEmpty()) checkNum = 0;
-//    }
-//
-//    if (checkNum == 0) {
-//      noticeService.uploadPost(noticeRequestDTO);
-//    } else {
-//      List<String> imgPaths = s3Service.upload(multipartFiles);
-//      noticeService.uploadPostWithImg(noticeRequestDTO, imgPaths);
-//    }
-//    return new ResponseEntity<>(getSuccessHeaders(), HttpStatus.OK);
-//  }
+  @PostMapping()
+  public ResponseEntity<?> uploadMission(
+      @RequestPart("missionContent") MissionRequestDto missionRequestDto,
+      @RequestPart(name = "imgUrl", required = false) List<MultipartFile> multipartFiles) {
+
+    //MultipartFile을 리스트에 넣어줬기 때문에 List 내부의 이미지파일에 isEmpty()를 적용해야 한다.
+    int checkNum = 1;
+    for (MultipartFile image : multipartFiles) {
+      if (image.isEmpty()) {
+        checkNum = 0;
+      }
+    }
+
+    MissionResponseDto result = MissionResponseDto.builder().build();
+    if (checkNum == 0) {
+      Mission mission = missionService.uploadMission(missionRequestDto);
+      result.setMissionId(mission.getId());
+    } else {
+      List<String> imgPaths = s3Service.upload(multipartFiles);
+      Mission uploadMissionWithImg = missionService.uploadMissionWithImg(missionRequestDto,
+          imgPaths);
+      result.setMissionId(uploadMissionWithImg.getId());
+    }
+
+    return new ResponseEntity<>(result, getSuccessHeaders(), HttpStatus.OK);
+  }
 
 }

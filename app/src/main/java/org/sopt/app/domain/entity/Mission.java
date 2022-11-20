@@ -11,6 +11,7 @@ import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.util.List;
+import org.sopt.app.presentation.mission.dto.MissionRequestDto;
 
 @Entity
 @Table(name = "mission")
