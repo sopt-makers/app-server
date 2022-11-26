@@ -63,4 +63,17 @@ public class MissionController extends BaseController {
     return new ResponseEntity<>(result, getSuccessHeaders(), HttpStatus.OK);
   }
 
+
+  /**
+   * 완료 미션만 조회하기
+   */
+  @GetMapping("complete")
+  public ResponseEntity<?> findCompleteMission(@RequestHeader("userId") String userId) {
+
+    List<Mission> resultMission = missionService.getCompleteMission(userId);
+
+    return new ResponseEntity<>(resultMission, getSuccessHeaders(), HttpStatus.OK);
+  }
+
+
 }

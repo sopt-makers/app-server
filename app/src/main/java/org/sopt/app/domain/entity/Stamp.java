@@ -43,4 +43,10 @@ public class Stamp extends BaseEntity {
 
     @Column
     private LocalDate updatedAt;
+
+    @Column
+    private Long userId;
+
+    @Column
+    private Long missionId;
 }
