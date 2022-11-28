@@ -49,9 +49,6 @@ public class MissionService {
   @Transactional
   public List<Mission> getCompleteMission(String userId) {
 
-//    //전체 미션 불러오기
-//    List<Mission> missionList = missionRepository.findAll();
-
     //헤더에서 받은 userId로 Stamp 테이블에서 달성한 미션번호 가져오기
     List<Stamp> stampList = stampRepository.findAllByUserId(Long.valueOf(userId));
 
@@ -63,17 +60,6 @@ public class MissionService {
 
     return missionRepository.findMissionIn(missionIdList);
 
-//
-//    noneMatch: 중복 X
-//    anyMatch: 중복 O
-//    List<String> oldList = Arrays.asList("1", "2", "3", "4");
-//    List<String> newList = Arrays.asList("3", "4", "5", "6");
-//
-//    List<String> resultList1 = oldList.stream()
-//        .filter(old -> newList.stream().noneMatch(Predicate.isEqual(old)))
-//        .collect(Collectors.toList());
-//
-//    System.out.println(resultList1); // [1, 2]
 
   }
 
@@ -90,6 +76,45 @@ public class MissionService {
 ////                command.getCouponNumber().equals(coupon.getCouponId()))
 ////            .findAny().orElseThrow(IllegalArgumentException::new));
 //  }
+
+  /**
+   * 미완료 미션만 불러오기
+   */
+  @Transactional
+  public List<Mission> getIncompleteMission(String userId) {
+
+    //전체 미션 조회하기
+    List<Mission> missionList = missionRepository.findAll();
+    List<Long> allMissionList = new ArrayList<>();
+    for (Mission mission : missionList) {
+      allMissionList.add(mission.getId());
+    }
+
+    //stamp에서 userId로 달성한 mission 조회하기
+    List<Stamp> stampList = stampRepository.findAllByUserId(Long.valueOf(userId));
+    List<Long> completeMissionIdList = new ArrayList<>();
+    for (Stamp stamp : stampList) {
+      completeMissionIdList.add(stamp.getMissionId());
+    }
+
+    //두 리스트 비교해서 중복값 제거
+    List<Long> inCompleteIdList = allMissionList.stream()
+        .filter(all -> completeMissionIdList.stream().noneMatch(Predicate.isEqual(all)))
+        .toList();
+
+//    noneMatch: 중복 X
+//    anyMatch: 중복 O
+//    List<String> oldList = Arrays.asList("1", "2", "3", "4");
+//    List<String> newList = Arrays.asList("3", "4", "5", "6");
+//
+//    List<String> resultList1 = oldList.stream()
+//        .filter(old -> newList.stream().noneMatch(Predicate.isEqual(old)))
+//        .collect(Collectors.toList());
+//
+//    System.out.println(resultList1); // [1, 2]
+
+    return missionRepository.findMissionIn(inCompleteIdList);
+  }
 
 
   //Mission Entity 양식에 맞게 데이터 세팅
